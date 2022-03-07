@@ -1,0 +1,91 @@
+{
+  "name": "game-catalog-starter",
+  "version": "1.0.3",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon",
+    "start": "node build/index.js",
+    "populate-db": "ts-node ./src/scripts/populate-db.ts",
+    "destroy-db": "ts-node ./src/scripts/destroy-db.ts",
+    "format": "prettier --write .",
+    "lint": "eslint \"{src,tests}/**/*.{js,ts,jsx,tsx}\"",
+    "test": "yarn test:unit && yarn test:e2e",
+    "test:unit": "jest --runInBand tests/unit",
+    "test:e2e": "jest --runInBand tests/e2e"
+  },
+  "dependencies": {
+    "dotenv": "10.0.0",
+    "express": "^4.17.3",
+    "mongodb": "^4.4.0",
+    "nunjucks": "^3.2.3",
+    "ts-node": "^10.5.0",
+    "typescript": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^17.0.21",
+    "@types/nunjucks": "^3.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
+    "@typescript-eslint/parser": "^5.13.0",
+    "devtools-protocol": "^0.0.977936",
+    "eslint": "^8.10.0",
+    "jest": "^27.4.3",
+    "nodemon": "^2.0.15",
+    "prettier": "2.5.1",
+    "taiko": "^1.2.8",
+    "ts-jest": "^27.0.7"
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 6,
+      "sourceType": "module"
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "ignorePatterns": [
+      "jest.config.js",
+      "node_modules/",
+      "*.test.ts",
+      "src.sample/*"
+    ]
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "globals": {
+      "ts-jest": {
+        "diagnostics": {
+          "warnOnly": true
+        }
+      }
+    },
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "dist"
+    ]
+  },
+  "nodemon": {
+    "watch": [
+      "src/",
+      "index.ts",
+      "views/"
+    ],
+    "ext": "ts,njk",
+    "ignore": [],
+    "exec": "ts-node index.ts"
+  }
+}

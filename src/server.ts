@@ -18,7 +18,7 @@ export function makeApp(db: Db): core.Express {
   });
 
   app.get("/platforms", (request, response) => {
-    response.render("platform");
+    response.render("platforms");
   });
 
   app.get("/games", (request, response) => {

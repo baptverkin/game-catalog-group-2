@@ -5,9 +5,10 @@
   <h1>Les différentes platforms</h1>
 
   <ul>
-    {% for index in listOfPlatforms %}
+    {% for index in platformsInfos %}
       <li>
-      {{index}}<br><br>
+      {{index.platform.name}}<br><br>
+    <img src={{index.platform.platform_logo_url}}>
       </li>
     {% endfor %}
   </ul>

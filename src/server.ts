@@ -11,6 +11,14 @@ export function makeApp(db: Db): core.Express {
     express: app,
   });
 
+const domain = process.env.AUTH0_DOMAIN;
+const clientId = process.env.AUTH0_CLIENT_ID;
+const redirectUri = process.env.AUTH0_REDIRECTURI;
+
+app.get("/login", (req, res) => {
+  res.redirect(`${domain}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`)
+});
+
   app.use(express.static("public"));
 
   app.set("view engine", "njk");

@@ -11,6 +11,8 @@ export function makeApp(db: Db): core.Express {
     express: app,
   });
 
+  app.use(express.static("public"));
+
   app.set("view engine", "njk");
 
   app.get("/", (request: Request, response: Response) => {

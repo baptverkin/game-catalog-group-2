@@ -1,0 +1,28 @@
+.nav {
+}
+
+.container-fluid {
+  display: flex;
+  background-color: grey;
+}
+
+.collapse {
+  display: flex;
+  align-items: flex-end;
+}
+.navbar-brand {
+  display: flex;
+  border: solid red;
+}
+.nav-link {
+  display: flex;
+  border: solid;
+}
+.nav-item {
+  display: flex;
+}
+
+#logopanier {
+  width: 2em;
+  height: 2em;
+}

@@ -1,0 +1,13 @@
+
+{% extends "layout.njk" %}
+
+{% block content %}
+  <h1>{{game.name}}</h1>
+  <img src={{game.cover.url}}>
+  <h3>Genre: {{game.genres}}</h3>
+  <h3>Summary : {{game.summary}}</h3>
+  <h3>Platform : {{game.platform.name}}</h3>
+
+  <button>Add to cart</button>
+
+{% endblock %}

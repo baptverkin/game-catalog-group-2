@@ -1,6 +1,7 @@
 import { ObjectID } from "bson";
-import express, { Request, Response } from "express";
+import express, { Request, response, Response } from "express";
 import * as core from "express-serve-static-core";
+import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
 import cookie from "cookie"
@@ -12,7 +13,11 @@ const client = new MongoClient(databaseUrl);
 type Game = {
   _id: ObjectID;
   name: string;
-  platform: string[];
+  platform: {
+    name: string;
+    platform_logo_url: string;
+    url: string;
+  };
   slug: string;
   summary: string;
   url: string;
@@ -88,7 +93,32 @@ app.get("/callback", async (request: Request, response: Response) => {
   });
 
   app.get("/platforms", (request, response) => {
-    response.render("platforms");
+    client.connect().then(async (client) => {
+      const db = client.db();
+      async function findAllGames(): Promise<Game[]> {
+        const games = await db.collection<Game>("games").find().toArray();
+        return games;
+      }
+      const gamesInfos = await findAllGames();
+
+      function getPlatformsNames() {
+        const patate: string[] = [];
+        gamesInfos.forEach((element) => {
+          patate.push(element.platform.name);
+        });
+        const arr = new Set(patate);
+        const tomate: string[] = [];
+        arr.forEach(async (index) => {
+          tomate.push(index);
+        });
+
+        return tomate;
+      }
+      const listOfPlatforms = getPlatformsNames();
+      console.log(listOfPlatforms);
+
+      response.render("platforms", { listOfPlatforms });
+    });
   });
 
   app.get("/games", (request, response) => {
@@ -102,5 +132,27 @@ app.get("/callback", async (request: Request, response: Response) => {
       response.render("games", { games: gamesInfos });
     });
   });
+
+  app.get("/game/:slug", (req, res) => {
+    const slug = req.params.slug;
+
+    client.connect().then(async (client)=> {
+      const db = client.db();
+      async function findGame(){
+        const game = await db.collection<Game>("games").findOne({slug: slug});
+        console.log(game)
+        return game;
+      }
+      const gameInfo = await findGame();
+      console.log(gameInfo);
+      res.render("game", {game: gameInfo})
+    })
+  })
+
   return app;
+
 }
+
+
+
+

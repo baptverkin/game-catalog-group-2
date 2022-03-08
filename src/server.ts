@@ -4,8 +4,8 @@ import * as core from "express-serve-static-core";
 import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
-import cookie from "cookie"
-import jose from "jose";
+// import cookie from "cookie"
+// import jose from "jose";
 
 const databaseUrl = process.env.MONGO_URL || "";
 const client = new MongoClient(databaseUrl);
@@ -55,7 +55,7 @@ export function makeApp(db: Db): core.Express {
     );
   });
 
-
+  /*
   // Find your JSON Web Key Set in Advanced Settings → Endpoints
 const jwksUrl = process.env.AUTH0_JSON_WEB_KEY_SET;
 
@@ -83,7 +83,7 @@ app.get("/callback", async (request: Request, response: Response) => {
     })
   );
 })
-
+*/
   app.use(express.static("public"));
 
   app.set("view engine", "njk");
@@ -95,29 +95,30 @@ app.get("/callback", async (request: Request, response: Response) => {
   app.get("/platforms", (request, response) => {
     client.connect().then(async (client) => {
       const db = client.db();
-      async function findAllGames(): Promise<Game[]> {
-        const games = await db.collection<Game>("games").find().toArray();
-        return games;
+      async function findAllPlatforms() {
+        const platforms = await db.collection<Game>("games").find().toArray();
+        console.log("line 100", platforms);
+        return platforms;
       }
-      const gamesInfos = await findAllGames();
+      const platformsInfos = await findAllPlatforms();
 
-      function getPlatformsNames() {
-        const patate: string[] = [];
-        gamesInfos.forEach((element) => {
-          patate.push(element.platform.name);
-        });
-        const arr = new Set(patate);
-        const tomate: string[] = [];
-        arr.forEach(async (index) => {
-          tomate.push(index);
-        });
+      // function getPlatformsNames() {
+      //   const patate: string[] = [];
+      //   platformsInfos.forEach((element) => {
+      //     patate.push(element.platform.name);
+      //   });
+      //   const arr = new Set(patate);
+      //   const tomate: string[] = [];
+      //   arr.forEach(async (index) => {
+      //     tomate.push(index);
+      //   });
 
-        return tomate;
-      }
-      const listOfPlatforms = getPlatformsNames();
-      console.log(listOfPlatforms);
+      //   return tomate;
+      // }
+      // const listOfPlatforms = getPlatformsNames();
+      // console.log(listOfPlatforms);
 
-      response.render("platforms", { listOfPlatforms });
+      response.render("platforms", { platformsInfos });
     });
   });
 
@@ -136,23 +137,18 @@ app.get("/callback", async (request: Request, response: Response) => {
   app.get("/game/:slug", (req, res) => {
     const slug = req.params.slug;
 
-    client.connect().then(async (client)=> {
+    client.connect().then(async (client) => {
       const db = client.db();
-      async function findGame(){
-        const game = await db.collection<Game>("games").findOne({slug: slug});
-        console.log(game)
+      async function findGame() {
+        const game = await db.collection<Game>("games").findOne({ slug: slug });
+        console.log(game);
         return game;
       }
       const gameInfo = await findGame();
       console.log(gameInfo);
-      res.render("game", {game: gameInfo})
-    })
-  })
+      res.render("game", { game: gameInfo });
+    });
+  });
 
   return app;
-
 }
-
-
-
-

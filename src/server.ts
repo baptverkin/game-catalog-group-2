@@ -1,6 +1,7 @@
 import { ObjectID } from "bson";
-import express, { Request, Response } from "express";
+import express, { Request, response, Response } from "express";
 import * as core from "express-serve-static-core";
+import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
 
@@ -55,5 +56,27 @@ app.get("/login", (req, res) => {
       response.render("games", { games: gamesInfos });
     });
   });
+
+  app.get("/game/:slug", (req, res) => {
+    const slug = req.params.slug;
+
+    client.connect().then(async (client)=> {
+      const db = client.db();
+      async function findGame(){
+        const game = await db.collection<Game>("games").findOne({slug: slug});
+        console.log(game)
+        return game;
+      }
+      const gameInfo = await findGame();
+      console.log(gameInfo);
+      res.render("game", {game: gameInfo})
+    })
+  })
+
   return app;
+
 }
+
+
+
+

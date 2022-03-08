@@ -2,13 +2,15 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-  <h1>Les différentes Games</h1>
+  <h1>Les différents Games</h1>
 
   <ul>
     {% for index in games %}
+    <a href=/game/{{index.slug}}>
       <li>
       {{index.name}}<br><img src={{index.cover.url}}><br>
       </li>
+      </a>
     {% endfor %}
   </ul>
 

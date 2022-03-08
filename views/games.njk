@@ -4,4 +4,12 @@
 {% block content %}
   <h1>Les différentes Games</h1>
 
+  <ul>
+    {% for index in games %}
+      <li>
+      {{index.name}}<br><img src={{index.cover.url}}><br>
+      </li>
+    {% endfor %}
+  </ul>
+
 {% endblock %}

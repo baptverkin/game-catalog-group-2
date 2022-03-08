@@ -4,4 +4,12 @@
 {% block content %}
   <h1>Les différentes platforms</h1>
 
+  <ul>
+    {% for index in listOfPlatforms %}
+      <li>
+      {{index}}<br><br>
+      </li>
+    {% endfor %}
+  </ul>
+
 {% endblock %}

@@ -10,7 +10,11 @@ const client = new MongoClient(databaseUrl);
 type Game = {
   _id: ObjectID;
   name: string;
-  platform: string[];
+  platform: {
+    name: string;
+    platform_logo_url: string;
+    url: string;
+  };
   slug: string;
   summary: string;
   url: string;
@@ -33,7 +37,32 @@ export function makeApp(db: Db): core.Express {
   });
 
   app.get("/platforms", (request, response) => {
-    response.render("platforms");
+    client.connect().then(async (client) => {
+      const db = client.db();
+      async function findAllGames(): Promise<Game[]> {
+        const games = await db.collection<Game>("games").find().toArray();
+        return games;
+      }
+      const gamesInfos = await findAllGames();
+
+      function getPlatformsNames() {
+        const patate: string[] = [];
+        gamesInfos.forEach((element) => {
+          patate.push(element.platform.name);
+        });
+        const arr = new Set(patate);
+        const tomate: string[] = [];
+        arr.forEach(async (index) => {
+          tomate.push(index);
+        });
+
+        return tomate;
+      }
+      const listOfPlatforms = getPlatformsNames();
+      console.log(listOfPlatforms);
+
+      response.render("platforms", { listOfPlatforms });
+    });
   });
 
   app.get("/games", (request, response) => {

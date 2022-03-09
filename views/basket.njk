@@ -1,0 +1,25 @@
+
+{% extends "layout.njk" %}
+{% block content %}
+<h1> Mon panier </h1>
+<ul>
+    {% for item in game %}
+
+      <li>
+      {{item.name}}</br>
+
+      </li>
+
+    {% endfor %}
+  </ul>
+
+<form method="POST" action="/clear-db">
+
+    <button type="submit">
+    Vider le panier
+  </button>
+
+</form>
+
+
+{% endblock %}

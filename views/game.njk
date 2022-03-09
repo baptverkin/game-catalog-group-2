@@ -8,6 +8,15 @@
   <h3>Summary : {{game.summary}}</h3>
   <h3>Platform : {{game.platform.name}}</h3>
 
-  <button>Add to cart</button>
+
+  <form method="POST" action="/add-cookie/{{game.slug}}">
+
+    <button type="submit">
+    Add to cart
+  </button>
+
+</form>
+
+
 
 {% endblock %}

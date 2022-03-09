@@ -4,8 +4,9 @@ import * as core from "express-serve-static-core";
 import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
+import cookie from "cookie";
+import slugify from "slugify";
 import { platform } from "os";
-// import cookie from "cookie"
 // import jose from "jose";
 
 const databaseUrl = process.env.MONGO_URL || "";
@@ -56,6 +57,68 @@ export function makeApp(db: Db): core.Express {
     resp.redirect(
       `${domain}/v2/logout?client_id=${clientId}&returnTo=http://localhost:3000`
     );
+  });
+
+  app.get("/basket", async (req, resp) => {
+    const panier = await db.collection("basket").find().toArray();
+    console.log(panier);
+    resp.render("basket", { game: panier });
+  });
+
+  const formParser = express.urlencoded({ extended: true });
+
+  app.post("/add-cookie/:slug", formParser, (request, response) => {
+    const routeParameters = request.params.slug;
+
+    client.connect().then(async (client) => {
+      const db = client.db();
+
+      const game = await db
+        .collection<Game>("games")
+        .findOne({ slug: routeParameters });
+      // .then((result) => {
+      // return result;
+      //  })
+
+      if (game === null) {
+        response.redirect("index");
+      } else {
+        db.collection("basket").insertOne(game);
+      }
+
+      response.set(
+        "Set-Cookie",
+        cookie.serialize("myCookie", routeParameters, {
+          maxAge: 3600, // This is the time (in seconds) that this cookie will be stored
+        })
+      );
+
+      response.render("confirm", { game });
+    });
+  });
+
+  // app.get("/add-cookie/:games", (request, response) => {
+  //   const basket: Basket = {
+  //     name: "Random",
+  //   };
+  //   const routeParameters = request.params;
+  //   console.log(routeParameters);
+
+  //   // const findBook = collectionOfBooks.find((book) => book === routeParameters.bookName);
+
+  //   // if(findBook){
+  //   //   response.render("book-details", { bookName: routeParameters.bookName });
+  //   // } else {
+  //   //   response.status(404).render("not-found", { error: "Book not found" });
+  //   // }
+  // });
+
+  // CLEAR BASKET
+  app.post("/clear-db", (request, response) => {
+    db.collection("basket").drop();
+    db.createCollection("basket");
+
+    response.render("basket");
   });
 
   /*
@@ -112,7 +175,6 @@ app.get("/callback", async (request: Request, response: Response) => {
             return acc;
           }
         }, [arr[0]]);
-
         return platforms;
   }
       const platformsInfos = await findAllPlatforms();
@@ -160,11 +222,11 @@ app.get("/callback", async (request: Request, response: Response) => {
       const db = client.db();
       async function findGame() {
         const game = await db.collection<Game>("games").findOne({ slug: slug });
-        console.log(game);
+        //console.log(game);
         return game;
       }
       const gameInfo = await findGame();
-      console.log(gameInfo);
+      //console.log(gameInfo);
       res.render("game", { game: gameInfo });
     });
   });

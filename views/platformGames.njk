@@ -1,0 +1,16 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <h1>Les différents jeux pour {{platformGames.platform.name}}</h1>
+
+  <ul>
+    {% for games in platformGames %}
+    <a href=/game/{{games.slug}}>
+      <li>
+      {{games.name}}<br><img src={{games.cover.url}}><br>
+      </li>
+      </a>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

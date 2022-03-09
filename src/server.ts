@@ -6,7 +6,6 @@ import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
 import cookie from "cookie";
 import slugify from "slugify";
-import { connect } from "http2";
 import { platform } from "os";
 // import jose from "jose";
 

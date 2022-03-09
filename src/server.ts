@@ -123,6 +123,23 @@ app.get("/callback", async (request: Request, response: Response) => {
     });
   });
 
+  app.get("/platforms/:name", (req, res) => {
+    const name = req.params.name;
+
+    client.connect().then(async (client) => {
+      const db = client.db();
+      async function findGames() {
+        const games = await db.collection<Game>("games").find({ "platform.name": name });
+        console.log(games);
+        return games;
+      }
+      const gameInfo = await findGames();
+      console.log(gameInfo);
+      res.render("platforms", { game: gameInfo });
+    });
+  });
+
+
   app.get("/games", (request, response) => {
     client.connect().then(async (client) => {
       const db = client.db();

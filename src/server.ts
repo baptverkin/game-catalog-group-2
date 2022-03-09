@@ -102,10 +102,11 @@ app.get("/callback", async (request: Request, response: Response) => {
       async function findAllPlatforms() {
         const games: Game[] = await db.collection<Game>("games").find().toArray();
 
-        const arr: Platform [] = games.map(e => e.platform)
+        const arr: Platform [] = games.map(e => e.platform).filter(e => e !== undefined);
         console.log("ligne 106", arr);
 
         const platforms: Platform[] = arr.reduce((acc, current) => {
+          console.log("===ligne109", {acc}, {current})
           const x = acc.find(item => item.name === current.name);
           if (!x) {
             return acc.concat([current]);
@@ -118,23 +119,6 @@ app.get("/callback", async (request: Request, response: Response) => {
         return platforms;
   }
       const platformsInfos = await findAllPlatforms();
-
-      // function getPlatformsNames() {
-      //   const patate: string[] = [];
-      //   platformsInfos.forEach((element) => {
-      //     patate.push(element.platform.name);
-      //   });
-      //   const arr = new Set(patate);
-      //   const tomate: string[] = [];
-      //   arr.forEach(async (index) => {
-      //     tomate.push(index);
-      //   });
-
-      //   return tomate;
-      // }
-      // const listOfPlatforms = getPlatformsNames();
-      // console.log(listOfPlatforms);
-
       response.render("platforms", { platformsInfos });
     });
   });

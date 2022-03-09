@@ -58,15 +58,13 @@ export function makeApp(db: Db): core.Express {
     );
   });
 
-  app.get("/basket", (req, resp) => {
-    resp.render("basket");
+  app.get("/basket", async (req, resp) => {
+    const panier = await db.collection("basket").find().toArray();
+    console.log(panier);
+    resp.render("basket", { game: panier });
   });
 
   const formParser = express.urlencoded({ extended: true });
-
-  type Basket = {
-    name: string;
-  };
 
   app.post("/add-cookie/:slug", formParser, (request, response) => {
     const routeParameters = request.params.slug;
@@ -76,11 +74,16 @@ export function makeApp(db: Db): core.Express {
 
       const game = await db
         .collection<Game>("games")
-        .findOne({ slug: routeParameters })
-        .then((jeux) => {
-          return jeux;
-        });
-      db.collection("basket").insertOne(jeux);
+        .findOne({ slug: routeParameters });
+      // .then((result) => {
+      // return result;
+      //  })
+
+      if (game === null) {
+        response.redirect("index");
+      } else {
+        db.collection("basket").insertOne(game);
+      }
 
       response.set(
         "Set-Cookie",
@@ -89,7 +92,7 @@ export function makeApp(db: Db): core.Express {
         })
       );
 
-      response.render("basket", { game });
+      response.render("confirm", { game });
     });
   });
 
@@ -110,15 +113,11 @@ export function makeApp(db: Db): core.Express {
   // });
 
   // CLEAR BASKET
-  app.get("/clear-cookie", (request, response) => {
-    response.set(
-      "Set-Cookie",
-      cookie.serialize("myCookie", "", {
-        maxAge: 0,
-      })
-    );
+  app.post("/clear-db", (request, response) => {
+    db.collection("basket").drop();
+    db.createCollection("basket");
 
-    response.send("myCookie has been deleted");
+    response.render("basket");
   });
 
   /*

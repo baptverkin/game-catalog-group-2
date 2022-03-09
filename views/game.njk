@@ -7,8 +7,7 @@
   <h3>Genre: {{game.genres}}</h3>
   <h3>Summary : {{game.summary}}</h3>
   <h3>Platform : {{game.platform.name}}</h3>
-{#
-  <button><a href= "/basket">Add to cart</a></button> #}
+
 
   <form method="POST" action="/add-cookie/{{game.slug}}">
 
@@ -18,6 +17,6 @@
 
 </form>
 
-{# <a href= "/add-cookie?games={{game.name}}"> Add to cart </a> #}
+
 
 {% endblock %}

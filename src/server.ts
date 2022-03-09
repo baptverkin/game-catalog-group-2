@@ -103,10 +103,8 @@ app.get("/callback", async (request: Request, response: Response) => {
         const games: Game[] = await db.collection<Game>("games").find().toArray();
 
         const arr: Platform [] = games.map(e => e.platform).filter(e => e !== undefined);
-        console.log("ligne 106", arr);
 
         const platforms: Platform[] = arr.reduce((acc, current) => {
-          console.log("===ligne109", {acc}, {current})
           const x = acc.find(item => item.name === current.name);
           if (!x) {
             return acc.concat([current]);
@@ -115,7 +113,6 @@ app.get("/callback", async (request: Request, response: Response) => {
           }
         }, [arr[0]]);
 
-        console.log ("==ligne117", platforms)
         return platforms;
   }
       const platformsInfos = await findAllPlatforms();
@@ -123,19 +120,23 @@ app.get("/callback", async (request: Request, response: Response) => {
     });
   });
 
-  app.get("/platforms/:name", (req, res) => {
-    const name = req.params.name;
+  app.get("/platform/:name", (req, res) => {
+    const nameSlug = req.params.name;
+    const name = nameSlug.replace("-", " ");
+    console.log(126,name);
+    
 
+    
     client.connect().then(async (client) => {
       const db = client.db();
       async function findGames() {
-        const games = await db.collection<Game>("games").find({ "platform.name": name });
-        console.log(games);
+        const games = await db.collection<Game>("games").find({ "platform.name": name }).toArray();
+        // console.log(games);
         return games;
       }
-      const gameInfo = await findGames();
-      console.log(gameInfo);
-      res.render("platforms", { game: gameInfo });
+      const platformGames = await findGames();
+      // console.log(platformGames);
+      res.render("platformGames", { platformGames });
     });
   });
 

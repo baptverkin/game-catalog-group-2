@@ -4,6 +4,7 @@ import * as core from "express-serve-static-core";
 import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
+import { platform } from "os";
 // import cookie from "cookie"
 // import jose from "jose";
 
@@ -13,15 +14,17 @@ const client = new MongoClient(databaseUrl);
 type Game = {
   _id: ObjectID;
   name: string;
-  platform: {
-    name: string;
-    platform_logo_url: string;
-    url: string;
-  };
+  platform: Platform;
   slug: string;
   summary: string;
   url: string;
 };
+
+type Platform = {
+  name: string;
+  platform_logo_url: string;
+  url: string;
+}
 
 export function makeApp(db: Db): core.Express {
   const app = express();
@@ -95,11 +98,25 @@ app.get("/callback", async (request: Request, response: Response) => {
   app.get("/platforms", (request, response) => {
     client.connect().then(async (client) => {
       const db = client.db();
+
       async function findAllPlatforms() {
-        const platforms = await db.collection<Game>("games").find().toArray();
-        console.log("line 100", platforms);
+        const games: Game[] = await db.collection<Game>("games").find().toArray();
+
+        const arr: Platform [] = games.map(e => e.platform)
+        console.log("ligne 106", arr);
+
+        const platforms: Platform[] = arr.reduce((acc, current) => {
+          const x = acc.find(item => item.name === current.name);
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, [arr[0]]);
+
+        console.log ("==ligne117", platforms)
         return platforms;
-      }
+  }
       const platformsInfos = await findAllPlatforms();
 
       // function getPlatformsNames() {

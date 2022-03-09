@@ -4,7 +4,10 @@ import * as core from "express-serve-static-core";
 import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
-// import cookie from "cookie"
+import cookie from "cookie";
+
+import slugify from "slugify";
+import { connect } from "http2";
 // import jose from "jose";
 
 const databaseUrl = process.env.MONGO_URL || "";
@@ -55,6 +58,69 @@ export function makeApp(db: Db): core.Express {
     );
   });
 
+  app.get("/basket", (req, resp) => {
+    resp.render("basket");
+  });
+
+  const formParser = express.urlencoded({ extended: true });
+
+  type Basket = {
+    name: string;
+  };
+
+  app.post("/add-cookie/:slug", formParser, (request, response) => {
+    const routeParameters = request.params.slug;
+
+    client.connect().then(async (client) => {
+      const db = client.db();
+
+      const game = await db
+        .collection<Game>("games")
+        .findOne({ slug: routeParameters })
+        .then((jeux) => {
+          return jeux;
+        });
+      db.collection("basket").insertOne(jeux);
+
+      response.set(
+        "Set-Cookie",
+        cookie.serialize("myCookie", routeParameters, {
+          maxAge: 3600, // This is the time (in seconds) that this cookie will be stored
+        })
+      );
+
+      response.render("basket", { game });
+    });
+  });
+
+  // app.get("/add-cookie/:games", (request, response) => {
+  //   const basket: Basket = {
+  //     name: "Random",
+  //   };
+  //   const routeParameters = request.params;
+  //   console.log(routeParameters);
+
+  //   // const findBook = collectionOfBooks.find((book) => book === routeParameters.bookName);
+
+  //   // if(findBook){
+  //   //   response.render("book-details", { bookName: routeParameters.bookName });
+  //   // } else {
+  //   //   response.status(404).render("not-found", { error: "Book not found" });
+  //   // }
+  // });
+
+  // CLEAR BASKET
+  app.get("/clear-cookie", (request, response) => {
+    response.set(
+      "Set-Cookie",
+      cookie.serialize("myCookie", "", {
+        maxAge: 0,
+      })
+    );
+
+    response.send("myCookie has been deleted");
+  });
+
   /*
   // Find your JSON Web Key Set in Advanced Settings → Endpoints
 const jwksUrl = process.env.AUTH0_JSON_WEB_KEY_SET;
@@ -97,7 +163,7 @@ app.get("/callback", async (request: Request, response: Response) => {
       const db = client.db();
       async function findAllPlatforms() {
         const platforms = await db.collection<Game>("games").find().toArray();
-        console.log("line 100", platforms);
+        //console.log("line 100", platforms);
         return platforms;
       }
       const platformsInfos = await findAllPlatforms();
@@ -141,11 +207,11 @@ app.get("/callback", async (request: Request, response: Response) => {
       const db = client.db();
       async function findGame() {
         const game = await db.collection<Game>("games").findOne({ slug: slug });
-        console.log(game);
+        //console.log(game);
         return game;
       }
       const gameInfo = await findGame();
-      console.log(gameInfo);
+      //console.log(gameInfo);
       res.render("game", { game: gameInfo });
     });
   });

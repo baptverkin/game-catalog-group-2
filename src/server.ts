@@ -5,9 +5,9 @@ import { appendFile } from "fs";
 import { Db, MongoClient } from "mongodb";
 import nunjucks from "nunjucks";
 import cookie from "cookie";
-
 import slugify from "slugify";
 import { connect } from "http2";
+import { platform } from "os";
 // import jose from "jose";
 
 const databaseUrl = process.env.MONGO_URL || "";
@@ -16,15 +16,17 @@ const client = new MongoClient(databaseUrl);
 type Game = {
   _id: ObjectID;
   name: string;
-  platform: {
-    name: string;
-    platform_logo_url: string;
-    url: string;
-  };
+  platform: Platform;
   slug: string;
   summary: string;
   url: string;
 };
+
+type Platform = {
+  name: string;
+  platform_logo_url: string;
+  url: string;
+}
 
 export function makeApp(db: Db): core.Express {
   const app = express();
@@ -160,32 +162,47 @@ app.get("/callback", async (request: Request, response: Response) => {
   app.get("/platforms", (request, response) => {
     client.connect().then(async (client) => {
       const db = client.db();
+
       async function findAllPlatforms() {
-        const platforms = await db.collection<Game>("games").find().toArray();
-        //console.log("line 100", platforms);
+        const games: Game[] = await db.collection<Game>("games").find().toArray();
+
+        const arr: Platform [] = games.map(e => e.platform).filter(e => e !== undefined);
+
+        const platforms: Platform[] = arr.reduce((acc, current) => {
+          const x = acc.find(item => item.name === current.name);
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, [arr[0]]);
         return platforms;
-      }
+  }
       const platformsInfos = await findAllPlatforms();
-
-      // function getPlatformsNames() {
-      //   const patate: string[] = [];
-      //   platformsInfos.forEach((element) => {
-      //     patate.push(element.platform.name);
-      //   });
-      //   const arr = new Set(patate);
-      //   const tomate: string[] = [];
-      //   arr.forEach(async (index) => {
-      //     tomate.push(index);
-      //   });
-
-      //   return tomate;
-      // }
-      // const listOfPlatforms = getPlatformsNames();
-      // console.log(listOfPlatforms);
-
       response.render("platforms", { platformsInfos });
     });
   });
+
+  app.get("/platform/:name", (req, res) => {
+    const nameSlug = req.params.name;
+    const name = nameSlug.replace("-", " ");
+    console.log(126,name);
+    
+
+    
+    client.connect().then(async (client) => {
+      const db = client.db();
+      async function findGames() {
+        const games = await db.collection<Game>("games").find({ "platform.name": name }).toArray();
+        // console.log(games);
+        return games;
+      }
+      const platformGames = await findGames();
+      // console.log(platformGames);
+      res.render("platformGames", { platformGames });
+    });
+  });
+
 
   app.get("/games", (request, response) => {
     client.connect().then(async (client) => {

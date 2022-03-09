@@ -5,11 +5,13 @@
   <h1>Les différentes platforms</h1>
 
   <ul>
-    {% for index in platformsInfos %}
+    {% for platform in platformsInfos %}
+    <a href=/platform/{{platform.name | replace(" ","-")}}>
       <li>
-      {{index.platform.name}}<br><br>
-    <img src={{index.platform.platform_logo_url}}>
+      {{platform.name}}<br><br>
+    <img src={{platform.platform_logo_url}}>
       </li>
+    </a>
     {% endfor %}
   </ul>
 

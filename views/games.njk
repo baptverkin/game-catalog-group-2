@@ -4,6 +4,8 @@
 {% block content %}
   <h1>Les différents Games</h1>
 
+  <a class="btn btn-primary" href="/platforms?page=1" role="button">Link</a>
+
   <ul>
     {% for index in games %}
     <a href=/game/{{index.slug}}>

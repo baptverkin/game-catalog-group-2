@@ -7,6 +7,8 @@ import nunjucks from "nunjucks";
 import cookie from "cookie";
 import slugify from "slugify";
 import { platform } from "os";
+import fetch from "node-fetch";
+import { resourceLimits } from "worker_threads";
 // import jose from "jose";
 
 const databaseUrl = process.env.MONGO_URL || "";
@@ -38,19 +40,34 @@ export function makeApp(db: Db): core.Express {
   const domain = process.env.AUTH0_DOMAIN;
   const clientId = process.env.AUTH0_CLIENT_ID;
   const redirectUri = process.env.AUTH0_REDIRECTURI;
+  const clientSecret = process.env.AUTH0_CLIENT_SECRET;
+  const audience = process.env.AUTH0_AUDIENCE;
+  const scope = process.env.AUTH0_SCOPES;
+  const token= process.env.AUTH0_TOKEN_URL;
 
   app.get("/login", (req, resp) => {
     resp.redirect(
-      `${domain}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`
+      `${domain}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&audience=${audience}&scope=${scope}`
     );
   });
 
-  app.get("/authorize", (req, resp) => {
-    resp.render("index");
-  });
+  app.get("/authorize", async (req, resp) => {
+    const authCode = req.query.code;
+    console.log(authCode);
+    const userInfo = await fetch(`${token}`, { method: "POST", headers: {"Content-type": "application/x-www-form-urlencoded"}, body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=http://localhost:3000/`})
+      .then((result) => result.json());
+
+      const idToken = userInfo.id_token;
+      const accessToken = userInfo.access_token;
+
+        db.collection("users").insertOne({id_token: idToken, access_token: accessToken});
+
+      resp.render("index")
+      });
+
 
   app.get("/userinfo", (req, resp) => {
-    resp.redirect(`${domain}/userinfo Authorization: 'Bearer {ACCESS_TOKEN}'`);
+    resp.redirect(`${domain}/userinfo`);
   });
 
   app.get("/logout", (req, resp) => {
@@ -69,6 +86,7 @@ export function makeApp(db: Db): core.Express {
 
   app.post("/add-cookie/:slug", formParser, (request, response) => {
     const routeParameters = request.params.slug;
+    // const userName = request.params.username;
 
     client.connect().then(async (client) => {
       const db = client.db();
@@ -76,9 +94,10 @@ export function makeApp(db: Db): core.Express {
       const game = await db
         .collection<Game>("games")
         .findOne({ slug: routeParameters });
-      // .then((result) => {
-      // return result;
-      //  })
+
+        // const userName = await db
+        // .collection<Game>("usrs")
+        // .findOne({ username: userName })
 
       if (game === null) {
         response.redirect("index");
@@ -186,9 +205,9 @@ app.get("/callback", async (request: Request, response: Response) => {
     const nameSlug = req.params.name;
     const name = nameSlug.replace("-", " ");
     console.log(126,name);
-    
 
-    
+
+
     client.connect().then(async (client) => {
       const db = client.db();
       async function findGames() {

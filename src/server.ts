@@ -204,7 +204,8 @@ app.get("/callback", async (request: Request, response: Response) => {
   app.get("/platform/:name", (req, res) => {
     const nameSlug = req.params.name;
     const name = nameSlug.replace("-", " ");
-    console.log(126,name);
+
+    console.log(name);
 
 
 
@@ -223,16 +224,22 @@ app.get("/callback", async (request: Request, response: Response) => {
 
 
   app.get("/games", (request, response) => {
+    const pageNumber = parseInt(String(request.query.page))
+    console.log(pageNumber);
+    
     client.connect().then(async (client) => {
       const db = client.db();
       async function findAllGames(): Promise<Game[]> {
-        const games = await db.collection<Game>("games").find().toArray();
+        const games = await db.collection<Game>("games").find().skip((pageNumber -1) * 10).limit(10).toArray();
         return games;
       }
       const gamesInfos = await findAllGames();
-      response.render("games", { games: gamesInfos });
+    
+      response.render("games", { games: gamesInfos, pageNumber });
     });
   });
+
+  
 
   app.get("/game/:slug", (req, res) => {
     const slug = req.params.slug;

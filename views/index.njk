@@ -1,15 +1,62 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-  <h1>Welcome on the utimate video game platform</h1>
+
+  <center><h1>Welcome on the utimate video game platform</h1></center><br><br>
 
 
-  <a href="/games?page=1"><img>List Of Games</a> </br>
-  <a href="/platforms"><img>List Of Platforms</a> </br>
 
-  <a href="/login">Login</a> </br>
-  <a href="/logout">Logout</a> </br>
-
+<div class="cards">
+  <div class="card mb-3 shadow mb-5 rounded text-center">
+    <center>
+      <fieldset>
+        <a href="/games?page=1">
+          <img src="/images/games.jpeg" width="200px">
+        <a href="/games?page=1">List of games</a>
+      </fieldset>
+    </center>
+  </div>
+  <div class="card mb-3 shadow mb-5 rounded text-center">
+    <center>
+      <fieldset>
+        <a href="/platforms">
+          <img src="/images/list-platforms.jpeg" width="200px">
+        </a>
+        <a href="/platforms">List of all platforms</a>
+      </fieldset>
+    </center>
+  </div>
+  <div class="card mb-3 shadow mb-5 rounded text-center">
+    <center>
+      <fieldset>
+        <a href="/login">
+          <img src="/images/login.png" width="200px">
+        </a>
+        <a href="/login">Login</a>
+      </fieldset>
+    </center>
+  </div>
+  <div class="card mb-3 shadow mb-5 rounded text-center">
+    <center>
+      <fieldset>
+        <a href="/logout">
+          <img src="/images/logout.jpeg" width="200px">
+        </a>
+        <a href="/logout">Logout</a>
+      </fieldset>
+    </center>
+  </div>
+  <div class="card mb-3 shadow mb-5 rounded text-center">
+    <center>
+      <fieldset>
+        <a href="/userinfo">
+          <img src="/images/profile.png" width="200px">
+        </a>
+        <a href="/userinfo">My profil</a>
+      </fieldset>
+    </center>
+  </div>
+</div>
 
 "This should be changed in the first PR"
 

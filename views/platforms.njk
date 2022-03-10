@@ -2,17 +2,23 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-  <h1>All platforms</h1>
 
-  <ul>
+  <center><h1>All platforms</h1></center><br><br>
+
+
+  <div class="cards">
     {% for platform in platformsInfos %}
-    <a href=/platform/{{platform.name | replace(" ","-")}}>
-      <li>
-      {{platform.name}}<br><br>
-    <img src={{platform.platform_logo_url}}>
-      </li>
-    </a>
+    <div class="card bg-light mb-3 shadow mb-5 rounded">
+        <center>
+          <fieldset>
+            <a href=/platform/{{platform.name | replace(" ","-")}}>
+              {{platform.name}}<br><br>
+              <img src={{platform.platform_logo_url}}>
+            </a>
+          </fieldset>
+        <center>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
 
 {% endblock %}

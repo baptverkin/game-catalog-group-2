@@ -197,7 +197,6 @@ export function makeApp(db: Db): core.Express {
 
     console.log(126, name);
 
-
     client.connect().then(async (client) => {
       const db = client.db();
       async function findGames() {
@@ -215,13 +214,18 @@ export function makeApp(db: Db): core.Express {
   });
 
   app.get("/games", (request, response) => {
-    const pageNumber = parseInt(String(request.query.page))
+    const pageNumber = parseInt(String(request.query.page));
     console.log(pageNumber);
 
     client.connect().then(async (client) => {
       const db = client.db();
       async function findAllGames(): Promise<Game[]> {
-        const games = await db.collection<Game>("games").find().skip((pageNumber -1) * 10).limit(10).toArray();
+        const games = await db
+          .collection<Game>("games")
+          .find()
+          .skip((pageNumber - 1) * 10)
+          .limit(10)
+          .toArray();
         return games;
       }
       const gamesInfos = await findAllGames();
@@ -229,8 +233,6 @@ export function makeApp(db: Db): core.Express {
       response.render("games", { games: gamesInfos, pageNumber });
     });
   });
-
-
 
   app.get("/game/:slug", (req, res) => {
     const slug = req.params.slug;

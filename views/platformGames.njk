@@ -1,9 +1,9 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-  <h1>Les différents jeux pour {{platformGames[0].platform.name}}</h1>
+  <center><h1>Jeux de la plateforme: {{platformGames[0].platform.name}}</h1></center><br><br>
 
-  <ul>
+  {# <ul>
     {% for games in platformGames %}
 
     <a href=/game/{{games.slug}}>
@@ -12,6 +12,21 @@
       </li>
       </a>
     {% endfor %}
-  </ul>
+  </ul> #}
+
+  <div class="cards">
+    {% for games in platformGames %}
+    <div class="card bg-light mb-3 shadow mb-5 rounded">
+        <center>
+          <fieldset>
+            <a href=/game/{{games.slug}}>
+              {{games.name}}<br><br>
+              <img src={{games.cover.url}}>
+            </a>
+          </fieldset>
+        <center>
+      </div>
+    {% endfor %}
+  </div>
 
 {% endblock %}

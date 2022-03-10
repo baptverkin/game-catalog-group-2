@@ -32,9 +32,14 @@
     {% for index in games %}
     <a href=/game/{{index.slug}}>
       <li>
-      {{index.name}}<br><img src={{index.cover.url}}><br>
+        {{index.name}}<br>
+        {% if index.cover.url %}
+          <img src={{index.cover.url}}><br>
+        {% else %}
+          <img src="/images/No_image_available.png" height="160px" width="160px">
+        {% endif %}
       </li>
-      </a>
+    </a>
     {% endfor %}
   </ul>
 

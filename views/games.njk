@@ -4,6 +4,30 @@
 {% block content %}
   <h1>Les différents Games</h1>
 
+  page: {{ pageNumber }}<br>
+  {% if pageNumber <= 1 %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">page précédente</a></li>
+      <li class="page-item"><a class="page-link shadow mb-5 rounded" href="/games?page={{pageNumber+1}}">page suivante</a></li>
+    </ul>
+  </nav>
+  {% elif pageNumber >= 10 %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">page précédente</a></li>
+      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">page suivante</a></li>
+    </ul>
+  </nav>
+{% else %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">page précédente</a></li>
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber+1}}">page suivante</a></li>
+    </ul>
+  </nav>
+{% endif %}
+
   <ul>
     {% for index in games %}
     <a href=/game/{{index.slug}}>

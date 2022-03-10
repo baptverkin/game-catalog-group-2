@@ -27,7 +27,7 @@ type Platform = {
   name: string;
   platform_logo_url: string;
   url: string;
-}
+};
 
 export function makeApp(db: Db): core.Express {
   const app = express();
@@ -43,7 +43,7 @@ export function makeApp(db: Db): core.Express {
   const clientSecret = process.env.AUTH0_CLIENT_SECRET;
   const audience = process.env.AUTH0_AUDIENCE;
   const scope = process.env.AUTH0_SCOPES;
-  const token= process.env.AUTH0_TOKEN_URL;
+  const token = process.env.AUTH0_TOKEN_URL;
 
   app.get("/login", (req, resp) => {
     resp.redirect(
@@ -53,18 +53,30 @@ export function makeApp(db: Db): core.Express {
 
   app.get("/authorize", async (req, resp) => {
     const authCode = req.query.code;
-    console.log(authCode);
-    const userInfo = await fetch(`${token}`, { method: "POST", headers: {"Content-type": "application/x-www-form-urlencoded"}, body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=http://localhost:3000/`})
-      .then((result) => result.json());
 
-      const idToken = userInfo.id_token;
-      const accessToken = userInfo.access_token;
+    const userInfo = await fetch(`${token}`, {
+      method: "POST",
+      headers: { "Content-type": "application/x-www-form-urlencoded" },
+      body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=http://localhost:3000/index`,
+    }).then((result) => result.json());
 
-        db.collection("users").insertOne({id_token: idToken, access_token: accessToken});
+    const idToken = userInfo.id_token;
+    const accessToken = userInfo.access_token;
 
-      resp.render("index")
-      });
+    db.collection("users").insertOne({
+      id_token: idToken,
+      access_token: accessToken,
+    });
 
+    resp.set(
+      "Set-Cookie",
+      cookie.serialize("idCookie", idToken, {
+        maxAge: 3600, // This is the time (in seconds) that this cookie will be stored
+      })
+    );
+
+    resp.render("index");
+  });
 
   app.get("/userinfo", (req, resp) => {
     resp.redirect(`${domain}/userinfo`);
@@ -77,8 +89,12 @@ export function makeApp(db: Db): core.Express {
   });
 
   app.get("/basket", async (req, resp) => {
+    const mycookie = cookie.parse(req.get("cookie") || "");
+    const user = mycookie.idCookie;
+    if (user === null) {
+      resp.send("Please Connect");
+    }
     const panier = await db.collection("basket").find().toArray();
-    console.log(panier);
     resp.render("basket", { game: panier });
   });
 
@@ -86,8 +102,13 @@ export function makeApp(db: Db): core.Express {
 
   app.post("/add-cookie/:slug", formParser, (request, response) => {
     const routeParameters = request.params.slug;
-    // const userName = request.params.username;
 
+    // const userName = request.params.username;
+    const mycookie = cookie.parse(request.get("cookie") || "");
+
+    const user = mycookie.idCookie;
+
+    // console.log(user);
     client.connect().then(async (client) => {
       const db = client.db();
 
@@ -95,14 +116,12 @@ export function makeApp(db: Db): core.Express {
         .collection<Game>("games")
         .findOne({ slug: routeParameters });
 
-        // const userName = await db
-        // .collection<Game>("usrs")
-        // .findOne({ username: userName })
+      const token = await db.collection("users").findOne({ id_token: user });
 
-      if (game === null) {
+      if (game === null || token === null) {
         response.redirect("index");
       } else {
-        db.collection("basket").insertOne(game);
+        db.collection("basket").insertOne({ game: game, user: token });
       }
 
       response.set(
@@ -116,22 +135,6 @@ export function makeApp(db: Db): core.Express {
     });
   });
 
-  // app.get("/add-cookie/:games", (request, response) => {
-  //   const basket: Basket = {
-  //     name: "Random",
-  //   };
-  //   const routeParameters = request.params;
-  //   console.log(routeParameters);
-
-  //   // const findBook = collectionOfBooks.find((book) => book === routeParameters.bookName);
-
-  //   // if(findBook){
-  //   //   response.render("book-details", { bookName: routeParameters.bookName });
-  //   // } else {
-  //   //   response.status(404).render("not-found", { error: "Book not found" });
-  //   // }
-  // });
-
   // CLEAR BASKET
   app.post("/clear-db", (request, response) => {
     db.collection("basket").drop();
@@ -140,35 +143,6 @@ export function makeApp(db: Db): core.Express {
     response.render("basket");
   });
 
-  /*
-  // Find your JSON Web Key Set in Advanced Settings → Endpoints
-const jwksUrl = process.env.AUTH0_JSON_WEB_KEY_SET;
-
-
-
-app.get("/callback", async (request: Request, response: Response) => {
-
-
-
-  // Retrieve your tokens from Auth0 `/oauth/token` endpoint
-
-  const jwksKeys = createRemoteJWKSet(jwksUrl);
-
-  await jose.jwtVerify(<YOUR_ACCESS_TOKEN>, jwksKeys);
-  await jose.jwtVerify(<YOUR_ID_TOKEN>, jwksKeys);
-
-  response.setHeader(
-    "Set-Cookie",
-    cookie.serialize("token", <YOUR_ACCESS_TOKEN>, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== "development",
-      maxAge: 60 * 60,
-      sameSite: "strict",
-      path: "/",
-    })
-  );
-})
-*/
   app.use(express.static("public"));
 
   app.set("view engine", "njk");
@@ -182,20 +156,28 @@ app.get("/callback", async (request: Request, response: Response) => {
       const db = client.db();
 
       async function findAllPlatforms() {
-        const games: Game[] = await db.collection<Game>("games").find().toArray();
+        const games: Game[] = await db
+          .collection<Game>("games")
+          .find()
+          .toArray();
 
-        const arr: Platform [] = games.map(e => e.platform).filter(e => e !== undefined);
+        const arr: Platform[] = games
+          .map((e) => e.platform)
+          .filter((e) => e !== undefined);
 
-        const platforms: Platform[] = arr.reduce((acc, current) => {
-          const x = acc.find(item => item.name === current.name);
-          if (!x) {
-            return acc.concat([current]);
-          } else {
-            return acc;
-          }
-        }, [arr[0]]);
+        const platforms: Platform[] = arr.reduce(
+          (acc, current) => {
+            const x = acc.find((item) => item.name === current.name);
+            if (!x) {
+              return acc.concat([current]);
+            } else {
+              return acc;
+            }
+          },
+          [arr[0]]
+        );
         return platforms;
-  }
+      }
       const platformsInfos = await findAllPlatforms();
       response.render("platforms", { platformsInfos });
     });
@@ -205,14 +187,16 @@ app.get("/callback", async (request: Request, response: Response) => {
     const nameSlug = req.params.name;
     const name = nameSlug.replace("-", " ");
 
-    console.log(name);
-
+    console.log(126, name);
 
 
     client.connect().then(async (client) => {
       const db = client.db();
       async function findGames() {
-        const games = await db.collection<Game>("games").find({ "platform.name": name }).toArray();
+        const games = await db
+          .collection<Game>("games")
+          .find({ "platform.name": name })
+          .toArray();
         // console.log(games);
         return games;
       }
@@ -221,7 +205,6 @@ app.get("/callback", async (request: Request, response: Response) => {
       res.render("platformGames", { platformGames });
     });
   });
-
 
   app.get("/games", (request, response) => {
     const pageNumber = parseInt(String(request.query.page))

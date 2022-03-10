@@ -204,32 +204,22 @@ app.get("/callback", async (request: Request, response: Response) => {
 
 
   app.get("/games", (request, response) => {
+    const pageNumber = parseInt(String(request.query.page))
+    console.log(pageNumber);
+    
     client.connect().then(async (client) => {
       const db = client.db();
       async function findAllGames(): Promise<Game[]> {
-        const games = await db.collection<Game>("games").find().toArray();
+        const games = await db.collection<Game>("games").find().skip((pageNumber -1) * 10).limit(10).toArray();
         return games;
       }
       const gamesInfos = await findAllGames();
-      response.render("games", { games: gamesInfos });
+    
+      response.render("games", { games: gamesInfos, pageNumber });
     });
   });
 
-  app.get("/games/:page", async(request, response) => {
-      const db = client.db();
-      const page = request.query.page;
-     
-      client.connect().then(async (client) => {
-
-        async function pagination() {
-          const games = await db.collection<Game>("games").find().skip(0).limit(5).toArray();
-          return games;
-        }
-        const gameInfo = await pagination();
-        response.render("games", { games: gameInfo });
-      });
-    
-  })
+  
 
   app.get("/game/:slug", (req, res) => {
     const slug = req.params.slug;

@@ -37,17 +37,18 @@ export function makeApp(db: Db): core.Express {
     express: app,
   });
 
-  const domain = process.env.AUTH0_DOMAIN;
+  const domainAuth0 = process.env.AUTH0_DOMAIN;
   const clientId = process.env.AUTH0_CLIENT_ID;
   const redirectUri = process.env.AUTH0_REDIRECTURI;
   const clientSecret = process.env.AUTH0_CLIENT_SECRET;
   const audience = process.env.AUTH0_AUDIENCE;
   const scope = process.env.AUTH0_SCOPES;
   const token = process.env.AUTH0_TOKEN_URL;
+  const domain = "http://localhost:3000"
 
   app.get("/login", (req, resp) => {
     resp.redirect(
-      `${domain}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&audience=${audience}&scope=${scope}`
+      `${domainAuth0}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&audience=${audience}&scope=${scope}`
     );
   });
 
@@ -57,7 +58,7 @@ export function makeApp(db: Db): core.Express {
     const userInfo = await fetch(`${token}`, {
       method: "POST",
       headers: { "Content-type": "application/x-www-form-urlencoded" },
-      body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=http://localhost:3000/index`,
+      body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=${domain}/index`,
     }).then((result) => result.json());
 
     const idToken = userInfo.id_token;
@@ -79,7 +80,7 @@ export function makeApp(db: Db): core.Express {
   });
 
   app.get("/userinfo", (req, resp) => {
-    resp.redirect(`${domain}/userinfo`);
+    resp.redirect(`${domainAuth0}/userinfo`);
   });
 
   app.get("/logout", (req, resp) => {
@@ -92,31 +93,39 @@ export function makeApp(db: Db): core.Express {
       }),
     ]);
     resp.redirect(
-      `${domain}/v2/logout?client_id=${clientId}&returnTo=http://localhost:3000`
+      `${domainAuth0}/v2/logout?client_id=${clientId}&returnTo=${domain}`
     );
   });
 
   app.get("/basket", async (req, resp) => {
     const mycookie = cookie.parse(req.get("cookie") || "");
     const user = mycookie.idCookie;
-    if (user === null) {
-      resp.send("Please Connect");
+
+        type Token ={
+          id_token: string,
+          access_token: string,
+        }
+      const token = await db.collection<Token>("users").findOne({ id_token: user })
+      .then((result)=> result?.id_token);
+
+
+    if (user === undefined) {
+      resp.redirect("/pleaseLogin");
+    }else if (user === token) {
+      const cart = await db.collection("basket").find({user: user}).toArray();
+      resp.render("basket", { game: cart });
+    } else {
+      console.error()
     }
-    const panier = await db.collection("basket").find().toArray();
-    resp.render("basket", { game: panier });
   });
 
   const formParser = express.urlencoded({ extended: true });
 
   app.post("/add-cookie/:slug", formParser, (request, response) => {
     const routeParameters = request.params.slug;
-
-    // const userName = request.params.username;
     const mycookie = cookie.parse(request.get("cookie") || "");
-
     const user = mycookie.idCookie;
 
-    // console.log(user);
     client.connect().then(async (client) => {
       const db = client.db();
 
@@ -124,13 +133,12 @@ export function makeApp(db: Db): core.Express {
         .collection<Game>("games")
         .findOne({ slug: routeParameters });
 
-      const token = await db.collection("users").findOne({ id_token: user });
-
-      if (game === null || token === null) {
-        response.redirect("index");
-      } else {
-        db.collection("basket").insertOne({ game: game, user: token });
-      }
+        type Token ={
+          id_token: string,
+          access_token: string,
+        }
+      const token = await db.collection<Token>("users").findOne({ id_token: user })
+      .then((result)=> result?.id_token);
 
       response.set(
         "Set-Cookie",
@@ -139,9 +147,20 @@ export function makeApp(db: Db): core.Express {
         })
       );
 
-      response.render("confirm", { game });
+      if ( user === undefined) {
+        response.redirect("/pleaseLogin");
+      } else if (user === token) {
+        db.collection("basket").insertOne({ game: game, user: token });
+        response.render("confirm", { game });
+      } else {
+        console.error()
+      }
     });
   });
+
+  app.get("/pleaseLogin", (req, resp) => {
+    resp.render("pleaseLogin")
+  })
 
   // CLEAR BASKET
   app.post("/clear-db", (request, response) => {

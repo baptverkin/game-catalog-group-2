@@ -83,6 +83,14 @@ export function makeApp(db: Db): core.Express {
   });
 
   app.get("/logout", (req, resp) => {
+    resp.set("Set-Cookie", [
+      cookie.serialize("idCookie", "", {
+        maxAge: 0,
+      }),
+      cookie.serialize("myCookie", "", {
+        maxAge: 0,
+      }),
+    ]);
     resp.redirect(
       `${domain}/v2/logout?client_id=${clientId}&returnTo=http://localhost:3000`
     );
@@ -209,7 +217,7 @@ export function makeApp(db: Db): core.Express {
   app.get("/games", (request, response) => {
     const pageNumber = parseInt(String(request.query.page))
     console.log(pageNumber);
-    
+
     client.connect().then(async (client) => {
       const db = client.db();
       async function findAllGames(): Promise<Game[]> {
@@ -217,12 +225,12 @@ export function makeApp(db: Db): core.Express {
         return games;
       }
       const gamesInfos = await findAllGames();
-    
+
       response.render("games", { games: gamesInfos, pageNumber });
     });
   });
 
-  
+
 
   app.get("/game/:slug", (req, res) => {
     const slug = req.params.slug;

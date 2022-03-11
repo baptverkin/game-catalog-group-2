@@ -44,7 +44,7 @@ export function makeApp(db: Db): core.Express {
   const audience = process.env.AUTH0_AUDIENCE;
   const scope = process.env.AUTH0_SCOPES;
   const token = process.env.AUTH0_TOKEN_URL;
-  const domain = "http://localhost:3000";
+  const domain = process.env.DOMAIN;
 
   app.get("/login", (req, resp) => {
     resp.redirect(
@@ -58,7 +58,7 @@ export function makeApp(db: Db): core.Express {
     const userInfo = await fetch(`${token}`, {
       method: "POST",
       headers: { "Content-type": "application/x-www-form-urlencoded" },
-      body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=${domain}/index`,
+      body: `grant_type=authorization_code&client_id=${clientId}&client_secret=${clientSecret}&code=${authCode}&redirect_uri=${redirectUri}`,
     }).then((result) => result.json());
 
     const idToken = userInfo.id_token;
@@ -101,22 +101,21 @@ export function makeApp(db: Db): core.Express {
     const mycookie = cookie.parse(req.get("cookie") || "");
     const user = mycookie.idCookie;
 
-    type Token = {
-      id_token: string;
-      access_token: string;
-    };
-    const token = await db
-      .collection<Token>("users")
-      .findOne({ id_token: user })
-      .then((result) => result?.id_token);
+        type Token ={
+          id_token: string,
+          access_token: string,
+        }
+      const token = await db.collection<Token>("users").findOne({ id_token: user })
+      .then((result)=> result?.id_token);
+
 
     if (user === undefined) {
       resp.redirect("/pleaseLogin");
-    } else if (user === token) {
-      const cart = await db.collection("basket").find({ user: user }).toArray();
+    }else if (user === token) {
+      const cart = await db.collection("basket").find({user: user}).toArray();
       resp.render("basket", { game: cart });
     } else {
-      console.error();
+      console.error()
     }
   });
 
@@ -134,14 +133,12 @@ export function makeApp(db: Db): core.Express {
         .collection<Game>("games")
         .findOne({ slug: routeParameters });
 
-      type Token = {
-        id_token: string;
-        access_token: string;
-      };
-      const token = await db
-        .collection<Token>("users")
-        .findOne({ id_token: user })
-        .then((result) => result?.id_token);
+        type Token ={
+          id_token: string,
+          access_token: string,
+        }
+      const token = await db.collection<Token>("users").findOne({ id_token: user })
+      .then((result)=> result?.id_token);
 
       response.set(
         "Set-Cookie",
@@ -150,20 +147,20 @@ export function makeApp(db: Db): core.Express {
         })
       );
 
-      if (user === undefined) {
+      if ( user === undefined) {
         response.redirect("/pleaseLogin");
       } else if (user === token) {
         db.collection("basket").insertOne({ game: game, user: token });
         response.render("confirm", { game });
       } else {
-        console.error();
+        console.error()
       }
     });
   });
 
   app.get("/pleaseLogin", (req, resp) => {
-    resp.render("pleaseLogin");
-  });
+    resp.render("pleaseLogin")
+  })
 
   // CLEAR BASKET
   app.post("/clear-db", (request, response) => {

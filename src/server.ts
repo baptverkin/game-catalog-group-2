@@ -178,6 +178,14 @@ export function makeApp(db: Db): core.Express {
   app.set("view engine", "njk");
 
   app.get("/", (request: Request, response: Response) => {
+    console.log("\n", domainAuth0,
+    "\n", clientId,
+    "\n",redirectUri,
+    "\n",clientSecret,
+    "\n",audience,
+    "\n",scope,
+    "\n",token,
+    "\n",domain)
     response.render("index");
   });
 

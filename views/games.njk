@@ -2,9 +2,9 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-  <h1>Les différents Games</h1>
+  <center><h1>Les différents jeux</h1></center><br>
 
-  page: {{ pageNumber }}<br>
+  <center><h3>page: {{ pageNumber }}</h3></center><br>
   {% if pageNumber <= 1 %}
   <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
@@ -28,19 +28,23 @@
   </nav>
 {% endif %}
 
-  <ul>
+  <div class="cards">
     {% for index in games %}
-    <a href=/game/{{index.slug}}>
-      <li>
-        {{index.name}}<br>
-        {% if index.cover.url %}
-          <img src={{index.cover.url}}><br>
-        {% else %}
-          <img src="/images/No_image_available.png" height="160px" width="160px">
-        {% endif %}
-      </li>
-    </a>
+    <div class="card bg-light mb-3 shadow mb-5 rounded">
+        <center>
+          <fieldset>
+            <a href=/game/{{index.slug}}>
+              {{index.name}}<br><br>
+              {% if index.cover.url %}
+                <img src={{index.cover.url}}><br>
+              {% else %}
+                <img src="/images/No_image_available.png" height="160px" width="160px">
+              {% endif %}
+            </a>
+          </fieldset>
+        <center>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
 
 {% endblock %}

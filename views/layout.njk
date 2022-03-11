@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/style/style.css"/>
 
   </head>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  {# <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
         <a class="navbar-brand" href="/">Game Shop</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,7 +25,40 @@
         </li>
     </div>
     </div>
-</nav>
+</nav> #}
+
+<div class="menu-icon-wrapper ">
+      <div class="menu-icon" onclick="toggleCssMenu(this)">
+        <div class="three-line">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <div id="cssmenu">
+        <ul class="shadow mb-5 rounded">
+            <li><a href="/">Game Shop</a></li>
+            <li><a href="/games?page=1">Games</a></li>
+            <li><a href="/platforms">Platforms</a></li>
+            <li><a href="/basket"><img src="/images/paniers.png" id="logopanier" alt ="logo panier"></a></li>
+        </ul>
+    </div>
+    <script>
+        function toggleCssMenu(icon) {
+            var cssmenu = document.getElementById('cssmenu');
+            if (icon.className.indexOf('active') == -1) {
+                icon.className = 'menu-icon active';
+          cssmenu.style.display = "block";
+          setTimeout(function(){cssmenu.className = 'active';},0);
+            }
+            else {
+                icon.className = 'menu-icon';
+          cssmenu.className = '';
+          setTimeout(function(){cssmenu.style.display = "none";},411);
+            }
+        }
+    </script>
 
   <body>
     {% block content %}

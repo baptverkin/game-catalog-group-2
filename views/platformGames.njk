@@ -4,18 +4,6 @@
 
   <center><h1>All games for {{platformGames[0].platform.name}}</h1></center><br><br>
 
-
-  {# <ul>
-    {% for games in platformGames %}
-
-    <a href=/game/{{games.slug}}>
-      <li>
-      {{games.name}}<br><img src={{games.cover.url}}><br>
-      </li>
-      </a>
-    {% endfor %}
-  </ul> #}
-
   <div class="cards">
     {% for games in platformGames %}
     <div class="card bg-light mb-3 shadow mb-5 rounded">
@@ -23,7 +11,11 @@
           <fieldset>
             <a href=/game/{{games.slug}}>
               {{games.name}}<br><br>
-              <img src={{games.cover.url}}>
+              {% if games.cover.url %}
+                <img src={{games.cover.url}}><br>
+              {% else %}
+                <img src="/images/No_image_available.png" height="160px" width="160px">
+              {% endif %}
             </a>
           </fieldset>
         <center>

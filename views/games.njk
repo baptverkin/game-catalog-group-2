@@ -2,28 +2,28 @@
 {% extends "layout.njk" %}
 
 {% block content %}
-  <center><h1>Les différents jeux</h1></center><br>
+  <center><h1>List of games</h1></center><br>
 
-  <center><h3>page: {{ pageNumber }}</h3></center><br>
+  <center><h3>Page: {{ pageNumber }}</h3></center><br>
   {% if pageNumber <= 1 %}
   <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">page précédente</a></li>
-      <li class="page-item"><a class="page-link shadow mb-5 rounded" href="/games?page={{pageNumber+1}}">page suivante</a></li>
+      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">Previous page</a></li>
+      <li class="page-item"><a class="page-link shadow mb-5 rounded" href="/games?page={{pageNumber+1}}">Next page</a></li>
     </ul>
   </nav>
   {% elif pageNumber >= 10 %}
   <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">page précédente</a></li>
-      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">page suivante</a></li>
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">Previous page</a></li>
+      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">Next page</a></li>
     </ul>
   </nav>
 {% else %}
   <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">page précédente</a></li>
-      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber+1}}">page suivante</a></li>
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">Previous page</a></li>
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber+1}}">Next page</a></li>
     </ul>
   </nav>
 {% endif %}
@@ -46,5 +46,28 @@
       </div>
     {% endfor %}
   </div>
+
+  {% if pageNumber <= 1 %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">Previous page</a></li>
+      <li class="page-item"><a class="page-link shadow mb-5 rounded" href="/games?page={{pageNumber+1}}">Next page</a></li>
+    </ul>
+  </nav>
+  {% elif pageNumber >= 10 %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">Previous page</a></li>
+      <li class="page-item disabled"><a class="shadow mb-5 rounded page-link">Next page</a></li>
+    </ul>
+  </nav>
+{% else %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber-1}}">Previous page</a></li>
+      <li class="page-item"><a class="shadow mb-5 rounded page-link" href="/games?page={{pageNumber+1}}">Next page</a></li>
+    </ul>
+  </nav>
+{% endif %}
 
 {% endblock %}
